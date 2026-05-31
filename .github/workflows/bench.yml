@@ -17,10 +17,26 @@ permissions:
 
 jobs:
   bench:
-    runs-on: ubuntu-latest
+    # Self-hosted Linux runner in the rasterandstate org. Using self-hosted on
+    # purpose: it sidesteps the org's github-hosted billing lock and measures
+    # the GitHub Actions stack (runner + upstream setup-* actions) on the same
+    # class of hardware as the Fjord runner, so the comparison is apples-to-
+    # apples on hardware and isolates the action ecosystem.
+    runs-on: [self-hosted, linux, X64]
     steps:
       - uses: actions/checkout@v4
 
+      # dtolnay/rust-toolchain drives rustup, which a bare VM may not have.
+      - name: ensure rustup
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v rustup >/dev/null 2>&1; then
+            echo "no rustup on PATH; installing"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+              | sh -s -- -y --default-toolchain none --profile minimal --no-modify-path
+          fi
+          echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> "$GITHUB_PATH"
       - name: rust toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: node toolchain

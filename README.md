@@ -3,16 +3,20 @@
 The GitHub Actions baseline for [`rasterstate/fjord-actions`](https://rasterhub.com/rasterstate/fjord-actions).
 
 The Fjord bundle benchmarks its cache/artifact/setup actions on a self-hosted
-Forgejo runner. The honest reference point is the same workload built on a
-github-hosted runner with the **upstream** actions (`actions/setup-node`,
-`actions/setup-go`, `dtolnay/rust-toolchain`). That has to run on GitHub, so it
-lives here.
+Forgejo runner. The reference point is the same workload built through the
+GitHub Actions stack with the **upstream** actions (`actions/setup-node`,
+`actions/setup-go`, `dtolnay/rust-toolchain`). That has to run on GitHub
+Actions, so it lives here.
+
+This runs on a **self-hosted** GitHub runner (same class of hardware as the
+Fjord runner), so the number isolates the action ecosystem rather than the
+cloud hardware: a same-hardware comparison of GitHub Actions vs Fjord Actions.
 
 ## What it does
 
 [`.github/workflows/bench.yml`](.github/workflows/bench.yml) builds three pinned
-workloads on `ubuntu-latest` and records a **cold** and a **warm** build time
-each:
+workloads on a self-hosted Linux runner and records a **cold** and a **warm**
+build time each:
 
 | Workload | Repo | Pinned ref |
 |----------|------|-----------|
