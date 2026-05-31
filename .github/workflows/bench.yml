@@ -1,0 +1,59 @@
+name: bench
+
+# Runs the same pinned workloads as rasterstate/fjord-actions on a
+# github-hosted runner, using the upstream setup actions, and commits the
+# cold/warm numbers to results/github.csv. The Fjord bench workflow fetches
+# that CSV over the raw URL to fill the "GitHub Actions" column of its table.
+#
+# Scheduled an hour before the Fjord run so fresh numbers are waiting.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * 1' # Mondays 07:00 UTC, ahead of the Fjord run at 08:00
+
+permissions:
+  contents: write
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: node toolchain
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: go toolchain
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: measure all workloads
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p results
+          printf 'workload,scenario,phase,seconds,runner_os,runner_arch,run_id,timestamp\n' > results/github.csv
+          bash scripts/measure.sh rust results/github.csv
+          bash scripts/measure.sh node results/github.csv
+          bash scripts/measure.sh go   results/github.csv
+          echo "---- results/github.csv ----"
+          cat results/github.csv
+
+      - name: commit the refreshed numbers
+        run: |
+          set -euo pipefail
+          if git diff --quiet results/github.csv; then
+            echo "no changes to publish"
+            exit 0
+          fi
+          git config user.email "actions@github.com"
+          git config user.name "Fjord Bench Bot"
+          git add results/github.csv
+          git commit -m "Refresh GitHub Actions bench numbers (run ${{ github.run_id }})"
+          git push
