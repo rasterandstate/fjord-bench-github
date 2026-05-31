@@ -21,7 +21,7 @@ build time each:
 | Workload | Repo | Pinned ref |
 |----------|------|-----------|
 | Rust | [`BurntSushi/ripgrep`](https://github.com/BurntSushi/ripgrep) | `14.1.1` |
-| Node | [`prettier/prettier`](https://github.com/prettier/prettier) | `3.3.3` |
+| Node | [`axios/axios`](https://github.com/axios/axios) | `v1.7.9` |
 | Go | [`cli/cli`](https://github.com/cli/cli) | `v2.62.0` |
 
 "Warm" is a second build with the toolchain's on-disk caches left intact, i.e.

@@ -22,7 +22,7 @@ ws="${bench_dir}/workload"
 
 case "$lang" in
   rust) url=https://github.com/BurntSushi/ripgrep.git; ref=14.1.1 ;;
-  node) url=https://github.com/prettier/prettier.git;  ref=3.3.3 ;;
+  node) url=https://github.com/axios/axios.git;        ref=v1.7.9 ;;
   go)   url=https://github.com/cli/cli.git;            ref=v2.62.0 ;;
   *) echo "unknown lang: $lang" >&2; exit 2 ;;
 esac
@@ -51,7 +51,11 @@ build() { # build [offline]
     node)
       local extra=()
       [ "${1:-}" = "offline" ] && extra=(--prefer-offline)
-      ( cd "$ws" && npm ci --cache "$npm_cache" --no-audit --no-fund --silent "${extra[@]}" ) ;;
+      local cmd=install
+      if [ -f "${ws}/package-lock.json" ] || [ -f "${ws}/npm-shrinkwrap.json" ]; then
+        cmd=ci
+      fi
+      ( cd "$ws" && npm "$cmd" --cache "$npm_cache" --no-audit --no-fund --silent "${extra[@]}" ) ;;
     go)
       ( cd "$ws" && GOMODCACHE="$gomodcache" GOCACHE="$gocache" GOFLAGS=-mod=mod go build ./... ) ;;
   esac
